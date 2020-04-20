@@ -1,0 +1,30 @@
+go:
+    version: 1.14
+repository:
+    path: github.com/mauricioabreu/nginx_rtmp_prometheus
+build:
+    binaries:
+        - name: nginx_rtmp_exporter
+    flags: -mod=vendor -a -tags netgo
+    ldflags: |
+        -X github.com/prometheus/common/version.Version={{.Version}}
+        -X github.com/prometheus/common/version.Revision={{.Revision}}
+        -X github.com/prometheus/common/version.Branch={{.Branch}}
+        -X github.com/prometheus/common/version.BuildUser={{user}}@{{host}}
+        -X github.com/prometheus/common/version.BuildDate={{date "20060102-15:04:05"}}
+tarball:
+    files:
+        - LICENSE
+crossbuild:
+    platforms:
+        - linux/amd64
+        - linux/386
+        - linux/arm
+        - linux/arm64
+        - linux/mips
+        - linux/mipsle
+        - linux/mips64
+        - linux/mips64le
+        - linux/ppc64
+        - linux/ppc64le
+        - linux/s390x
