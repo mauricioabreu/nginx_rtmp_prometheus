@@ -42,16 +42,9 @@ func (m metrics) String() string {
 	return strings.Join(s, ",")
 }
 
-func newMetric(metricName string, docString string, constLabels prometheus.Labels) *prometheus.Desc {
-	return prometheus.NewDesc(prometheus.BuildFQName(namespace, "stream", metricName), docString, []string{}, constLabels)
+func newMetric(metricName string, docString string, varLabels []string, constLabels prometheus.Labels) *prometheus.Desc {
+	return prometheus.NewDesc(prometheus.BuildFQName(namespace, "stream", metricName), docString, varLabels, constLabels)
 }
-
-var (
-	streamMetrics = metrics{
-		1: newMetric("bytes_in", "Current total of incoming bytes", nil),
-		2: newMetric("bytes_out", "Current total of outgoing bytes", nil),
-	}
-)
 
 // Exporter collects NGINX-RTMP stats from the status page URI
 // using the prometheus metrics package
@@ -60,22 +53,25 @@ type Exporter struct {
 	mutex  sync.RWMutex
 	fetch  func() (io.ReadCloser, error)
 	logger log.Logger
+
+	bytesIn  *prometheus.Desc
+	bytesOut *prometheus.Desc
 }
 
 // StreamInfo characteristics of a stream
 type StreamInfo struct {
 	Name     string
-	BytesIn  int64
-	BytesOut int64
+	BytesIn  float64
+	BytesOut float64
 }
 
 // NewStreamInfo builds a StreamInfo struct from string values
 func NewStreamInfo(name string, bytesIn string, bytesOut string) StreamInfo {
-	var bytesInInt, bytesOutInt int64
-	if n, err := strconv.ParseInt(bytesIn, 10, 64); err == nil {
+	var bytesInInt, bytesOutInt float64
+	if n, err := strconv.ParseFloat(bytesIn, 64); err == nil {
 		bytesInInt = n
 	}
-	if n, err := strconv.ParseInt(bytesOut, 10, 64); err == nil {
+	if n, err := strconv.ParseFloat(bytesOut, 64); err == nil {
 		bytesOutInt = n
 	}
 	return StreamInfo{Name: name, BytesIn: bytesInInt, BytesOut: bytesOutInt}
@@ -84,9 +80,11 @@ func NewStreamInfo(name string, bytesIn string, bytesOut string) StreamInfo {
 // NewExporter initializes an exporter
 func NewExporter(uri string, timeout time.Duration, logger log.Logger) (*Exporter, error) {
 	return &Exporter{
-		URI:    uri,
-		fetch:  fetchStats(uri, timeout),
-		logger: logger,
+		URI:      uri,
+		fetch:    fetchStats(uri, timeout),
+		logger:   logger,
+		bytesIn:  newMetric("bytes_in", "Current total of incoming bytes", []string{"stream"}, nil),
+		bytesOut: newMetric("bytes_out", "Current total of outgoing bytes", []string{"stream"}, nil),
 	}, nil
 }
 
@@ -146,13 +144,17 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 		level.Error(e.logger).Log("msg", "Can't parse XML", "err", err)
 		return
 	}
-	level.Info(e.logger).Log("msg", streams)
+
+	for _, stream := range streams {
+		ch <- prometheus.MustNewConstMetric(e.bytesIn, prometheus.CounterValue, stream.BytesIn, stream.Name)
+		ch <- prometheus.MustNewConstMetric(e.bytesOut, prometheus.CounterValue, stream.BytesOut, stream.Name)
+	}
 }
 
+// Describe describes all metrics to be exported to Prometheus
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
-	for _, m := range streamMetrics {
-		ch <- m
-	}
+	ch <- e.bytesIn
+	ch <- e.bytesOut
 }
 
 func main() {
