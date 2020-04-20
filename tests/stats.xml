@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="static/stat.xsl" ?>
+<rtmp>
+  <nginx_version>1.16.1</nginx_version>
+  <nginx_rtmp_version>1.1.4</nginx_rtmp_version>
+  <compiler>gcc 6.4.0 (Alpine 6.4.0)</compiler>
+  <built>Oct 26 2019 05:15:38</built>
+  <pid>7</pid>
+  <uptime>122</uptime>
+  <naccepted>7</naccepted>
+  <bw_in>6937192</bw_in>
+  <bytes_in>93147169</bytes_in>
+  <bw_out>1539632</bw_out>
+  <bytes_out>20761795</bytes_out>
+  <server>
+    <application>
+      <name>stream</name>
+      <live>
+        <stream>
+          <name>hello</name>
+          <time>118940</time>
+          <bw_in>1541776</bw_in>
+          <bytes_in>20908965</bytes_in>
+          <bw_out>1541776</bw_out>
+          <bytes_out>20726270</bytes_out>
+          <bw_audio>0</bw_audio>
+          <bw_video>1541776</bw_video>
+          <client>
+            <id>2</id>
+            <address>127.0.0.1</address>
+            <time>118370</time>
+            <dropped>0</dropped>
+            <avsync>-118900</avsync>
+            <timestamp>118900</timestamp>
+            <active />
+          </client>
+          <client>
+            <id>1</id>
+            <address>172.17.0.1</address>
+            <time>119150</time>
+            <flashver>FMLE/3.0 (compatible; Lavf58.20</flashver>
+            <dropped>0</dropped>
+            <avsync>-118900</avsync>
+            <timestamp>118900</timestamp>
+            <publishing />
+            <active />
+          </client>
+          <meta>
+            <video>
+              <width>1280</width>
+              <height>720</height>
+              <frame_rate>30</frame_rate>
+              <codec>H264</codec>
+              <profile>High</profile>
+              <compat>0</compat>
+              <level>3.1</level>
+            </video>
+            <audio />
+          </meta>
+          <nclients>2</nclients>
+          <publishing />
+          <active />
+        </stream>
+        <nclients>2</nclients>
+      </live>
+    </application>
+    <application>
+      <name>hls</name>
+      <live>
+        <stream>
+          <name>hello_360p878kbs</name>
+          <time>112765</time>
+          <bw_in>827096</bw_in>
+          <bytes_in>11155541</bytes_in>
+          <bw_out>0</bw_out>
+          <bytes_out>0</bytes_out>
+          <bw_audio>0</bw_audio>
+          <bw_video>827096</bw_video>
+          <client>
+            <id>6</id>
+            <address>127.0.0.1</address>
+            <time>112805</time>
+            <dropped>0</dropped>
+            <avsync>-117533</avsync>
+            <timestamp>117533</timestamp>
+            <publishing />
+            <active />
+          </client>
+          <meta>
+            <video>
+              <width>640</width>
+              <height>360</height>
+              <frame_rate>30</frame_rate>
+              <codec>H264</codec>
+              <profile>Baseline</profile>
+              <compat>192</compat>
+              <level>3.0</level>
+            </video>
+            <audio />
+          </meta>
+          <nclients>1</nclients>
+          <publishing />
+          <active />
+        </stream>
+        <stream>
+          <name>hello_240p264kbs</name>
+          <time>112665</time>
+          <bw_in>222864</bw_in>
+          <bytes_in>3016252</bytes_in>
+          <bw_out>0</bw_out>
+          <bytes_out>0</bytes_out>
+          <bw_audio>0</bw_audio>
+          <bw_video>222864</bw_video>
+          <client>
+            <id>8</id>
+            <address>127.0.0.1</address>
+            <time>112715</time>
+            <dropped>0</dropped>
+            <avsync>-117333</avsync>
+            <timestamp>117333</timestamp>
+            <publishing />
+            <active />
+          </client>
+          <meta>
+            <video>
+              <width>426</width>
+              <height>240</height>
+              <frame_rate>15</frame_rate>
+              <codec>H264</codec>
+              <profile>Baseline</profile>
+              <compat>192</compat>
+              <level>2.1</level>
+            </video>
+            <audio />
+          </meta>
+          <nclients>1</nclients>
+          <publishing />
+          <active />
+        </stream>
+        <stream>
+          <name>hello_240p528kbs</name>
+          <time>112715</time>
+          <bw_in>443984</bw_in>
+          <bytes_in>5984767</bytes_in>
+          <bw_out>0</bw_out>
+          <bytes_out>0</bytes_out>
+          <bw_audio>0</bw_audio>
+          <bw_video>443984</bw_video>
+          <client>
+            <id>7</id>
+            <address>127.0.0.1</address>
+            <time>112765</time>
+            <dropped>0</dropped>
+            <avsync>-117533</avsync>
+            <timestamp>117533</timestamp>
+            <publishing />
+            <active />
+          </client>
+          <meta>
+            <video>
+              <width>426</width>
+              <height>240</height>
+              <frame_rate>30</frame_rate>
+              <codec>H264</codec>
+              <profile>Baseline</profile>
+              <compat>192</compat>
+              <level>2.1</level>
+            </video>
+            <audio />
+          </meta>
+          <nclients>1</nclients>
+          <publishing />
+          <active />
+        </stream>
+        <stream>
+          <name>hello_720p2628kbs</name>
+          <time>112865</time>
+          <bw_in>2760672</bw_in>
+          <bytes_in>37037244</bytes_in>
+          <bw_out>0</bw_out>
+          <bytes_out>0</bytes_out>
+          <bw_audio>0</bw_audio>
+          <bw_video>2760672</bw_video>
+          <client>
+            <id>4</id>
+            <address>127.0.0.1</address>
+            <time>112925</time>
+            <dropped>0</dropped>
+            <avsync>-117533</avsync>
+            <timestamp>117533</timestamp>
+            <publishing />
+            <active />
+          </client>
+          <meta>
+            <video>
+              <width>1280</width>
+              <height>720</height>
+              <frame_rate>30</frame_rate>
+              <codec>H264</codec>
+              <profile>Baseline</profile>
+              <compat>192</compat>
+              <level>3.1</level>
+            </video>
+            <audio />
+          </meta>
+          <nclients>1</nclients>
+          <publishing />
+          <active />
+        </stream>
+        <stream>
+          <name>hello_480p1128kbs</name>
+          <time>112805</time>
+          <bw_in>1101176</bw_in>
+          <bytes_in>14870878</bytes_in>
+          <bw_out>0</bw_out>
+          <bytes_out>0</bytes_out>
+          <bw_audio>0</bw_audio>
+          <bw_video>1101176</bw_video>
+          <client>
+            <id>5</id>
+            <address>127.0.0.1</address>
+            <time>112865</time>
+            <dropped>0</dropped>
+            <avsync>-117533</avsync>
+            <timestamp>117533</timestamp>
+            <publishing />
+            <active />
+          </client>
+          <meta>
+            <video>
+              <width>854</width>
+              <height>480</height>
+              <frame_rate>30</frame_rate>
+              <codec>H264</codec>
+              <profile>Baseline</profile>
+              <compat>192</compat>
+              <level>3.1</level>
+            </video>
+            <audio />
+          </meta>
+          <nclients>1</nclients>
+          <publishing />
+          <active />
+        </stream>
+        <nclients>5</nclients>
+      </live>
+    </application>
+  </server>
+</rtmp>
