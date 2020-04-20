@@ -11,5 +11,5 @@ To run this exporter:
 Help on flags:
 
 ```
-./nginx_rtmp_exporter [flags]
+./nginx_rtmp_exporter -h
 ```
