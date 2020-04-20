@@ -1,4 +1,4 @@
-module github.com/mauricioabreu/nginx-rtmp-prometheus
+module github.com/mauricioabreu/nginx_rtmp_prometheus
 
 go 1.14
 

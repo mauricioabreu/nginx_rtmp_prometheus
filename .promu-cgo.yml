@@ -3,8 +3,6 @@ go:
 repository:
     path: github.com/mauricioabreu/nginx_rtmp_prometheus
 build:
-    binaries:
-        - name: nginx_rtmp_exporter
     flags: -mod=vendor -a -tags 'netgo static_build'
     ldflags: |
         -X github.com/prometheus/common/version.Version={{.Version}}
