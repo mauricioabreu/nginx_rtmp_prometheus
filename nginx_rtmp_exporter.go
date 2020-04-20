@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"sort"
@@ -14,6 +12,7 @@ import (
 
 	"io"
 
+	"github.com/antchfx/xmlquery"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
@@ -54,27 +53,6 @@ var (
 	}
 )
 
-// Application struct to hold all NGINX-RTMP applications
-type Application struct {
-	XMLName     xml.Name `xml:"application"`
-	Name        string   `xml:"name"`
-	LiveStreams []Live   `xml:"live"`
-}
-
-// Live struct to hold all NGINX-RTMP live streams
-type Live struct {
-	XMLName xml.Name `xml:"live"`
-	Streams []Stream `xml:"stream"`
-}
-
-// Stream struct to hold all NGINX-RTMP streams
-type Stream struct {
-	XMLName  xml.Name `xml:"stream"`
-	Name     string   `xml:"name"`
-	BytesIn  string   `xml:"bytes_in"`
-	BytesOut string   `xml:"bytes_out"`
-}
-
 // Exporter collects NGINX-RTMP stats from the status page URI
 // using the prometheus metrics package
 type Exporter struct {
@@ -82,6 +60,25 @@ type Exporter struct {
 	mutex  sync.RWMutex
 	fetch  func() (io.ReadCloser, error)
 	logger log.Logger
+}
+
+// StreamInfo characteristics of a stream
+type StreamInfo struct {
+	Name     string
+	BytesIn  int64
+	BytesOut int64
+}
+
+// NewStreamInfo builds a StreamInfo struct from string values
+func NewStreamInfo(name string, bytesIn string, bytesOut string) StreamInfo {
+	var bytesInInt, bytesOutInt int64
+	if n, err := strconv.ParseInt(bytesIn, 10, 64); err == nil {
+		bytesInInt = n
+	}
+	if n, err := strconv.ParseInt(bytesOut, 10, 64); err == nil {
+		bytesOutInt = n
+	}
+	return StreamInfo{Name: name, BytesIn: bytesInInt, BytesOut: bytesOutInt}
 }
 
 // NewExporter initializes an exporter
@@ -118,23 +115,38 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	e.scrape(ch)
 }
 
-func parseXML(respBody io.ReadCloser) (*Application, error) {
-	var application Application
-	data, err := ioutil.ReadAll(respBody)
+func parseStreams(respBody io.ReadCloser) ([]StreamInfo, error) {
+	doc, err := xmlquery.Parse(respBody)
 	if err != nil {
 		return nil, err
 	}
-	xml.Unmarshal(data, &application)
-	return &application, nil
+
+	streams := make([]StreamInfo, 0)
+	data := xmlquery.Find(doc, "//stream")
+
+	for _, stream := range data {
+		name := stream.SelectElement("name").InnerText()
+		bytesIn := stream.SelectElement("bytes_in").InnerText()
+		bytesOut := stream.SelectElement("bytes_out").InnerText()
+		streams = append(streams, NewStreamInfo(name, bytesIn, bytesOut))
+	}
+	return streams, nil
 }
 
 func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
-	body, err := e.fetch()
+	data, err := e.fetch()
 	if err != nil {
 		level.Error(e.logger).Log("msg", "Can't scrape NGINX-RTMP", "err", err)
 		return
 	}
-	defer body.Close()
+	defer data.Close()
+
+	streams, err := parseStreams(data)
+	if err != nil {
+		level.Error(e.logger).Log("msg", "Can't parse XML", "err", err)
+		return
+	}
+	level.Info(e.logger).Log("msg", streams)
 }
 
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
