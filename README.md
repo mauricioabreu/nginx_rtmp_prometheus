@@ -18,7 +18,7 @@ Help on flags:
 
 NGINX-RTMP exposes its metrics in a path specified in the nginx.conf file.
 
-To start collecting metrics you need to update your configuration with the following directives:
+To start collecting metrics you need to update your NGINX-RTMP configuration with the following directives:
 
 ```
 location /stat {
