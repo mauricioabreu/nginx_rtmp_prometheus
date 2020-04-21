@@ -16,6 +16,18 @@ Help on flags:
 
 ## Building
 
+To build the exporter:
+
+```
+make
+```
+
+or
+
+```
+make build
+```
+
 NGINX-RTMP exposes its metrics in a path specified in the nginx.conf file.
 
 To start collecting metrics you need to update your NGINX-RTMP configuration with the following directives:
