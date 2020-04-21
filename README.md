@@ -64,18 +64,33 @@ This exporter collects and exposes the following statistics:
 ```
 # HELP nginx_rtmp_exporter_build_info A metric with a constant '1' value labeled by version, revision, branch, and goversion from which nginx_rtmp_exporter was built.
 # TYPE nginx_rtmp_exporter_build_info gauge
-nginx_rtmp_exporter_build_info{branch="master",goversion="go1.14",revision="83760dedcd355d0dca52a635751b87982bf189e8",version="0.0.1"} 1
+nginx_rtmp_exporter_build_info{branch="master",goversion="go1.14",revision="fe3d8ac350cec520648b07cf9ceb613f12362e2b",version="0.0.1"} 1
+# HELP nginx_rtmp_server_incoming_bytes_total Current total of incoming bytes
+# TYPE nginx_rtmp_server_incoming_bytes_total counter
+nginx_rtmp_server_incoming_bytes_total 2.40895361e+08
+# HELP nginx_rtmp_server_outgoing_bytes_total Current total of outgoing bytes
+# TYPE nginx_rtmp_server_outgoing_bytes_total counter
+nginx_rtmp_server_outgoing_bytes_total 5.3739661e+07
+# HELP nginx_rtmp_server_receive_bytes_per_second Current bandwidth in per second
+# TYPE nginx_rtmp_server_receive_bytes_per_second gauge
+nginx_rtmp_server_receive_bytes_per_second 6.592750549316406
+# HELP nginx_rtmp_server_transmit_bytes_per_second Current bandwidth out per second
+# TYPE nginx_rtmp_server_transmit_bytes_per_second gauge
+nginx_rtmp_server_transmit_bytes_per_second 1.4704513549804688
+# HELP nginx_rtmp_server_uptime_seconds_total Number of seconds NGINX-RTMP started
+# TYPE nginx_rtmp_server_uptime_seconds_total counter
+nginx_rtmp_server_uptime_seconds_total 310
 # HELP nginx_rtmp_stream_incoming_bytes_total Current total of incoming bytes
 # TYPE nginx_rtmp_stream_incoming_bytes_total counter
-nginx_rtmp_stream_incoming_bytes_total{stream="hello"} 2.12292e+06
-nginx_rtmp_stream_incoming_bytes_total{stream="hello_240p264kbs"} 275959
-nginx_rtmp_stream_incoming_bytes_total{stream="hello_240p528kbs"} 539485
-nginx_rtmp_stream_incoming_bytes_total{stream="hello_360p878kbs"} 996627
-nginx_rtmp_stream_incoming_bytes_total{stream="hello_480p1128kbs"} 1.324909e+06
-nginx_rtmp_stream_incoming_bytes_total{stream="hello_720p2628kbs"} 3.306701e+06
+nginx_rtmp_stream_incoming_bytes_total{stream="hello"} 5.3836313e+07
+nginx_rtmp_stream_incoming_bytes_total{stream="hello_240p264kbs"} 7.772386e+06
+nginx_rtmp_stream_incoming_bytes_total{stream="hello_240p528kbs"} 1.5462727e+07
+nginx_rtmp_stream_incoming_bytes_total{stream="hello_360p878kbs"} 2.8888155e+07
+nginx_rtmp_stream_incoming_bytes_total{stream="hello_480p1128kbs"} 3.849418e+07
+nginx_rtmp_stream_incoming_bytes_total{stream="hello_720p2628kbs"} 9.5998269e+07
 # HELP nginx_rtmp_stream_outgoing_bytes_total Current total of outgoing bytes
 # TYPE nginx_rtmp_stream_outgoing_bytes_total counter
-nginx_rtmp_stream_outgoing_bytes_total{stream="hello"} 1.938764e+06
+nginx_rtmp_stream_outgoing_bytes_total{stream="hello"} 5.365292e+07
 nginx_rtmp_stream_outgoing_bytes_total{stream="hello_240p264kbs"} 0
 nginx_rtmp_stream_outgoing_bytes_total{stream="hello_240p528kbs"} 0
 nginx_rtmp_stream_outgoing_bytes_total{stream="hello_360p878kbs"} 0
@@ -83,26 +98,26 @@ nginx_rtmp_stream_outgoing_bytes_total{stream="hello_480p1128kbs"} 0
 nginx_rtmp_stream_outgoing_bytes_total{stream="hello_720p2628kbs"} 0
 # HELP nginx_rtmp_stream_receive_bytes_per_second Current bandwidth in per second
 # TYPE nginx_rtmp_stream_receive_bytes_per_second gauge
-nginx_rtmp_stream_receive_bytes_per_second{stream="hello"} 1.5095291137695312
-nginx_rtmp_stream_receive_bytes_per_second{stream="hello_240p264kbs"} 0
-nginx_rtmp_stream_receive_bytes_per_second{stream="hello_240p528kbs"} 0
-nginx_rtmp_stream_receive_bytes_per_second{stream="hello_360p878kbs"} 0
-nginx_rtmp_stream_receive_bytes_per_second{stream="hello_480p1128kbs"} 0
-nginx_rtmp_stream_receive_bytes_per_second{stream="hello_720p2628kbs"} 0
+nginx_rtmp_stream_receive_bytes_per_second{stream="hello"} 1.468170166015625
+nginx_rtmp_stream_receive_bytes_per_second{stream="hello_240p264kbs"} 0.20711517333984375
+nginx_rtmp_stream_receive_bytes_per_second{stream="hello_240p528kbs"} 0.4146881103515625
+nginx_rtmp_stream_receive_bytes_per_second{stream="hello_360p878kbs"} 0.77984619140625
+nginx_rtmp_stream_receive_bytes_per_second{stream="hello_480p1128kbs"} 1.0345001220703125
+nginx_rtmp_stream_receive_bytes_per_second{stream="hello_720p2628kbs"} 2.619903564453125
 # HELP nginx_rtmp_stream_transmit_bytes_per_second Current bandwidth out per second
 # TYPE nginx_rtmp_stream_transmit_bytes_per_second gauge
-nginx_rtmp_stream_transmit_bytes_per_second{stream="hello"} 1.3690261840820312
+nginx_rtmp_stream_transmit_bytes_per_second{stream="hello"} 1.468170166015625
 nginx_rtmp_stream_transmit_bytes_per_second{stream="hello_240p264kbs"} 0
 nginx_rtmp_stream_transmit_bytes_per_second{stream="hello_240p528kbs"} 0
 nginx_rtmp_stream_transmit_bytes_per_second{stream="hello_360p878kbs"} 0
 nginx_rtmp_stream_transmit_bytes_per_second{stream="hello_480p1128kbs"} 0
 nginx_rtmp_stream_transmit_bytes_per_second{stream="hello_720p2628kbs"} 0
-# HELP nginx_rtmp_stream_uptime Number of seconds since the stream started
-# TYPE nginx_rtmp_stream_uptime counter
-nginx_rtmp_stream_uptime{stream="hello"} 11.724
-nginx_rtmp_stream_uptime{stream="hello_240p264kbs"} 5.44
-nginx_rtmp_stream_uptime{stream="hello_240p528kbs"} 5.5
-nginx_rtmp_stream_uptime{stream="hello_360p878kbs"} 5.55
-nginx_rtmp_stream_uptime{stream="hello_480p1128kbs"} 5.61
-nginx_rtmp_stream_uptime{stream="hello_720p2628kbs"} 5.66
+# HELP nginx_rtmp_stream_uptime_seconds_total Number of seconds since the stream started
+# TYPE nginx_rtmp_stream_uptime_seconds_total counter
+nginx_rtmp_stream_uptime_seconds_total{stream="hello"} 306.805
+nginx_rtmp_stream_uptime_seconds_total{stream="hello_240p264kbs"} 300.55
+nginx_rtmp_stream_uptime_seconds_total{stream="hello_240p528kbs"} 300.6
+nginx_rtmp_stream_uptime_seconds_total{stream="hello_360p878kbs"} 300.65
+nginx_rtmp_stream_uptime_seconds_total{stream="hello_480p1128kbs"} 300.7
+nginx_rtmp_stream_uptime_seconds_total{stream="hello_720p2628kbs"} 300.75
 ```
