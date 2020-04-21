@@ -177,9 +177,9 @@ func main() {
 	var (
 		listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Default(":9718").String()
 		metricsPath   = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
-		scrapeURI     = kingpin.Flag("nginxrtmp.scrape-uri", "URI on which to scrape HAProxy.").Default("http://localhost:8080/stats").String()
-		timeout       = kingpin.Flag("nginxrtmp.timeout", "Timeout for trying to get stats from HAProxy.").Default("5s").Duration()
-		pidFile       = kingpin.Flag("nginxrtmp.pid-file", "Optional path to a file containing the NGINX-RTMP (NGINX) PID for additional metrics.").Default("").String()
+		scrapeURI     = kingpin.Flag("nginxrtmp.scrape-uri", "URI on which to scrape NGINX-RTMP stats.").Default("http://localhost:8080/stats").String()
+		timeout       = kingpin.Flag("nginxrtmp.timeout", "Timeout for trying to get stats from NGINX-RTMP.").Default("5s").Duration()
+		pidFile       = kingpin.Flag("nginxrtmp.pid-file", "Optional path to a file containing the NGINX-RTMP PID for additional metrics.").Default("").String()
 	)
 
 	promlogConfig := &promlog.Config{}
