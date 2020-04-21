@@ -61,43 +61,61 @@ type Exporter struct {
 	fetch  func() (io.ReadCloser, error)
 	logger log.Logger
 
-	bytesIn  *prometheus.Desc
-	bytesOut *prometheus.Desc
-	uptime   *prometheus.Desc
+	bytesIn      *prometheus.Desc
+	bytesOut     *prometheus.Desc
+	bandwidthIn  *prometheus.Desc
+	bandwidthOut *prometheus.Desc
+	uptime       *prometheus.Desc
 }
 
 // StreamInfo characteristics of a stream
 type StreamInfo struct {
-	Name     string
-	BytesIn  float64
-	BytesOut float64
-	Uptime   float64
+	Name        string
+	BytesIn     float64
+	BytesOut    float64
+	BandwidthIn float64
+	BandwidhOut float64
+	Uptime      float64
 }
 
 // NewStreamInfo builds a StreamInfo struct from string values
-func NewStreamInfo(name string, bytesIn string, bytesOut string, uptime string) StreamInfo {
-	var bytesInNum, bytesOutNum, uptimeNum float64
+func NewStreamInfo(name, bytesIn, bytesOut, bandwidthIn, bandwidthOut, uptime string) StreamInfo {
+	var bytesInNum, bytesOutNum, bandwidthInNum, bandwidthOutNum, uptimeNum float64
 	if n, err := strconv.ParseFloat(bytesIn, 64); err == nil {
 		bytesInNum = n
 	}
 	if n, err := strconv.ParseFloat(bytesOut, 64); err == nil {
 		bytesOutNum = n
 	}
-	if n, err := strconv.ParseFloat(uptime, 64); err == nil {
-		uptimeNum = n / 1000
+	if n, err := strconv.ParseFloat(bandwidthIn, 64); err == nil {
+		bandwidthInNum = n / 1048576 // bandwidth is in bits
 	}
-	return StreamInfo{Name: name, BytesIn: bytesInNum, BytesOut: bytesOutNum, Uptime: uptimeNum}
+	if n, err := strconv.ParseFloat(bandwidthOut, 64); err == nil {
+		bandwidthOutNum = n / 1048576 // bandwidth is in bits
+	}
+	if n, err := strconv.ParseFloat(uptime, 64); err == nil {
+		uptimeNum = n / 1000 // it is in miliseconds
+	}
+	return StreamInfo{
+		Name:        name,
+		BytesIn:     bytesInNum,
+		BytesOut:    bytesOutNum,
+		BandwidthIn: bandwidthInNum,
+		BandwidhOut: bandwidthOutNum,
+		Uptime:      uptimeNum}
 }
 
 // NewExporter initializes an exporter
 func NewExporter(uri string, timeout time.Duration, logger log.Logger) (*Exporter, error) {
 	return &Exporter{
-		URI:      uri,
-		fetch:    fetchStats(uri, timeout),
-		logger:   logger,
-		bytesIn:  newMetric("bytes_in", "Current total of incoming bytes", []string{"stream"}, nil),
-		bytesOut: newMetric("bytes_out", "Current total of outgoing bytes", []string{"stream"}, nil),
-		uptime:   newMetric("uptime", "Number of seconds since the stream started", []string{"stream"}, nil),
+		URI:          uri,
+		fetch:        fetchStats(uri, timeout),
+		logger:       logger,
+		bytesIn:      newMetric("incoming_bytes_total", "Current total of incoming bytes", []string{"stream"}, nil),
+		bytesOut:     newMetric("outgoing_bytes_total", "Current total of outgoing bytes", []string{"stream"}, nil),
+		bandwidthIn:  newMetric("receive_bytes_per_second", "Current bandwidth in per second", []string{"stream"}, nil),
+		bandwidthOut: newMetric("transmit_bytes_per_second", "Current bandwidth out per second", []string{"stream"}, nil),
+		uptime:       newMetric("uptime", "Number of seconds since the stream started", []string{"stream"}, nil),
 	}, nil
 }
 
@@ -139,8 +157,10 @@ func parseStreams(respBody io.ReadCloser) ([]StreamInfo, error) {
 		name := stream.SelectElement("name").InnerText()
 		bytesIn := stream.SelectElement("bytes_in").InnerText()
 		bytesOut := stream.SelectElement("bytes_out").InnerText()
+		receiveBytes := stream.SelectElement("bw_in").InnerText()
+		transmitBytes := stream.SelectElement("bw_out").InnerText()
 		uptime := stream.SelectElement("time").InnerText()
-		streams = append(streams, NewStreamInfo(name, bytesIn, bytesOut, uptime))
+		streams = append(streams, NewStreamInfo(name, bytesIn, bytesOut, receiveBytes, transmitBytes, uptime))
 	}
 	return streams, nil
 }
@@ -162,6 +182,8 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 	for _, stream := range streams {
 		ch <- prometheus.MustNewConstMetric(e.bytesIn, prometheus.CounterValue, stream.BytesIn, stream.Name)
 		ch <- prometheus.MustNewConstMetric(e.bytesOut, prometheus.CounterValue, stream.BytesOut, stream.Name)
+		ch <- prometheus.MustNewConstMetric(e.bandwidthIn, prometheus.GaugeValue, stream.BandwidthIn, stream.Name)
+		ch <- prometheus.MustNewConstMetric(e.bandwidthOut, prometheus.GaugeValue, stream.BandwidhOut, stream.Name)
 		ch <- prometheus.MustNewConstMetric(e.uptime, prometheus.CounterValue, stream.Uptime, stream.Name)
 	}
 }
@@ -170,6 +192,8 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- e.bytesIn
 	ch <- e.bytesOut
+	ch <- e.bandwidthIn
+	ch <- e.bandwidthOut
 	ch <- e.uptime
 }
 
