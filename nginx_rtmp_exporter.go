@@ -24,9 +24,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -177,6 +179,7 @@ func main() {
 		metricsPath   = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
 		scrapeURI     = kingpin.Flag("nginxrtmp.scrape-uri", "URI on which to scrape HAProxy.").Default("http://localhost:8080/stats").String()
 		timeout       = kingpin.Flag("nginxrtmp.timeout", "Timeout for trying to get stats from HAProxy.").Default("5s").Duration()
+		pidFile       = kingpin.Flag("nginxrtmp.pid-file", "Optional path to a file containing the NGINX-RTMP (NGINX) PID for additional metrics.").Default("").String()
 	)
 
 	promlogConfig := &promlog.Config{}
@@ -194,6 +197,24 @@ func main() {
 	}
 	prometheus.MustRegister(exporter)
 	prometheus.MustRegister(version.NewCollector("nginx_rtmp_exporter"))
+
+	if *pidFile != "" {
+		procExporter := prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{
+			PidFn: func() (int, error) {
+				content, err := ioutil.ReadFile(*pidFile)
+				if err != nil {
+					return 0, fmt.Errorf("cant't read pid file %q: %s", *pidFile, err)
+				}
+				value, err := strconv.Atoi(strings.TrimSpace(string(content)))
+				if err != nil {
+					return 0, fmt.Errorf("can't parse pid file %q: %s", *pidFile, err)
+				}
+				return value, nil
+			},
+			Namespace: namespace,
+		})
+		prometheus.MustRegister(procExporter)
+	}
 
 	level.Info(logger).Log("msg", "Listening on address", "address", *listenAddress)
 	http.Handle(*metricsPath, promhttp.Handler())
