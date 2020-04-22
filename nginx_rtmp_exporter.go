@@ -63,15 +63,15 @@ var (
 	serverMetrics = metrics{
 		"bytesIn":      newServerMetric("incoming_bytes_total", "Current total of incoming bytes", nil, nil),
 		"bytesOut":     newServerMetric("outgoing_bytes_total", "Current total of outgoing bytes", nil, nil),
-		"bandwidthIn":  newServerMetric("receive_bytes_per_second", "Current bandwidth in per second", nil, nil),
-		"bandwidthOut": newServerMetric("transmit_bytes_per_second", "Current bandwidth out per second", nil, nil),
+		"bandwidthIn":  newServerMetric("receive_bytes", "Current bandwidth in per second", nil, nil),
+		"bandwidthOut": newServerMetric("transmit_bytes", "Current bandwidth out per second", nil, nil),
 		"uptime":       newServerMetric("uptime_seconds_total", "Number of seconds NGINX-RTMP started", nil, nil),
 	}
 	streamMetrics = metrics{
 		"bytesIn":      newStreamMetric("incoming_bytes_total", "Current total of incoming bytes", []string{"stream"}, nil),
 		"bytesOut":     newStreamMetric("outgoing_bytes_total", "Current total of outgoing bytes", []string{"stream"}, nil),
-		"bandwidthIn":  newStreamMetric("receive_bytes_per_second", "Current bandwidth in per second", []string{"stream"}, nil),
-		"bandwidthOut": newStreamMetric("transmit_bytes_per_second", "Current bandwidth out per second", []string{"stream"}, nil),
+		"bandwidthIn":  newStreamMetric("receive_bytes", "Current bandwidth in per second", []string{"stream"}, nil),
+		"bandwidthOut": newStreamMetric("transmit_bytes", "Current bandwidth out per second", []string{"stream"}, nil),
 		"uptime":       newStreamMetric("uptime_seconds_total", "Number of seconds since the stream started", []string{"stream"}, nil),
 	}
 )
