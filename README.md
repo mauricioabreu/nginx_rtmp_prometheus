@@ -1,5 +1,19 @@
 # NGINX-RTMP exporter for Prometheus
 
+## Building
+
+To build the exporter:
+
+```
+make
+```
+
+or
+
+```
+make build
+```
+
 ## Getting started
 
 To run this exporter:
@@ -14,19 +28,15 @@ Help on flags:
 ./nginx_rtmp_exporter -h
 ```
 
-## Building
+## Testing
 
-To build the exporter:
+This project comes with two commands to start a real NGINX-RTMP server and ingest a real video.
 
-```
-make
-```
+Execute `make run-nginx-rtmp` and `make ingest-stream` in your terminal, then start the exporter.
 
-or
+You can also serve a fake server using the `make serve-mocked-stats` - it uses the file `tests/stats.xml`.
 
-```
-make build
-```
+## Metrics
 
 NGINX-RTMP exposes its metrics in a path specified in the nginx.conf file.
 
@@ -65,6 +75,9 @@ This exporter collects and exposes the following statistics:
 # HELP nginx_rtmp_exporter_build_info A metric with a constant '1' value labeled by version, revision, branch, and goversion from which nginx_rtmp_exporter was built.
 # TYPE nginx_rtmp_exporter_build_info gauge
 nginx_rtmp_exporter_build_info{branch="master",goversion="go1.14",revision="fe3d8ac350cec520648b07cf9ceb613f12362e2b",version="0.0.1"} 1
+# HELP nginx_rtmp_server_current_streams Current number of active streams
+# TYPE nginx_rtmp_server_current_streams gauge
+nginx_rtmp_server_current_streams 6
 # HELP nginx_rtmp_server_incoming_bytes_total Current total of incoming bytes
 # TYPE nginx_rtmp_server_incoming_bytes_total counter
 nginx_rtmp_server_incoming_bytes_total 2.40895361e+08
