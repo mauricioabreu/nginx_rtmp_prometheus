@@ -61,11 +61,12 @@ type metrics map[string]*prometheus.Desc
 
 var (
 	serverMetrics = metrics{
-		"bytesIn":      newServerMetric("incoming_bytes_total", "Current total of incoming bytes", nil, nil),
-		"bytesOut":     newServerMetric("outgoing_bytes_total", "Current total of outgoing bytes", nil, nil),
-		"bandwidthIn":  newServerMetric("receive_bytes", "Current bandwidth in per second", nil, nil),
-		"bandwidthOut": newServerMetric("transmit_bytes", "Current bandwidth out per second", nil, nil),
-		"uptime":       newServerMetric("uptime_seconds_total", "Number of seconds NGINX-RTMP started", nil, nil),
+		"bytesIn":        newServerMetric("incoming_bytes_total", "Current total of incoming bytes", nil, nil),
+		"bytesOut":       newServerMetric("outgoing_bytes_total", "Current total of outgoing bytes", nil, nil),
+		"bandwidthIn":    newServerMetric("receive_bytes", "Current bandwidth in per second", nil, nil),
+		"bandwidthOut":   newServerMetric("transmit_bytes", "Current bandwidth out per second", nil, nil),
+		"currentStreams": newServerMetric("current_streams", "Current number of active streams", nil, nil),
+		"uptime":         newServerMetric("uptime_seconds_total", "Number of seconds NGINX-RTMP started", nil, nil),
 	}
 	streamMetrics = metrics{
 		"bytesIn":      newStreamMetric("incoming_bytes_total", "Current total of incoming bytes", []string{"stream"}, nil),
@@ -264,6 +265,8 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(e.streamMetrics["bandwidthOut"], prometheus.GaugeValue, stream.BandwidhOut, stream.Name)
 		ch <- prometheus.MustNewConstMetric(e.streamMetrics["uptime"], prometheus.CounterValue, stream.Uptime, stream.Name)
 	}
+
+	ch <- prometheus.MustNewConstMetric(e.serverMetrics["currentStreams"], prometheus.GaugeValue, float64(len(streams)))
 }
 
 // Describe describes all metrics to be exported to Prometheus
@@ -302,6 +305,7 @@ func main() {
 	prometheus.MustRegister(exporter)
 	prometheus.MustRegister(version.NewCollector("nginx_rtmp_exporter"))
 
+	level.Info(logger).Log("msg", "PID File:", pidFile)
 	if *pidFile != "" {
 		procExporter := prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{
 			PidFn: func() (int, error) {
