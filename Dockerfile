@@ -7,6 +7,6 @@ ARG ARCH="amd64"
 ARG OS="linux"
 COPY .build/${OS}-${ARCH}/nginx_rtmp_exporter /bin/nginx_rtmp_exporter
 
-EXPOSE 9718
+EXPOSE 9728
 USER nobody
 ENTRYPOINT [ "/bin/nginx_rtmp_exporter" ]

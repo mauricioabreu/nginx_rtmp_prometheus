@@ -65,7 +65,7 @@ Now you can watch NGINX-RTMP statistics. This exports scrapes `localhost:8080/st
 ./nginx_rtmp_exporter --nginxrtmp.scrape-uri="localhost:9090/statistics"
 ```
 
-By default the NGINX-RTMP exporter serves on port `0.0.0.0:9718` at `/metrics`
+By default the NGINX-RTMP exporter serves on port `0.0.0.0:9728` at `/metrics`
 
 ## Collectors
 
