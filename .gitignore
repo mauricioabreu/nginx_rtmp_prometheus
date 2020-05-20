@@ -1,1 +1,4 @@
+/.build
+/.release
+/.tarballs
 /nginx_rtmp_exporter
