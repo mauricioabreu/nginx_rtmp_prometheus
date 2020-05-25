@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -80,10 +81,11 @@ var (
 // Exporter collects NGINX-RTMP stats from the status page URI
 // using the prometheus metrics package
 type Exporter struct {
-	URI    string
-	mutex  sync.RWMutex
-	fetch  func() (io.ReadCloser, error)
-	logger log.Logger
+	URI                  string
+	mutex                sync.RWMutex
+	fetch                func() (io.ReadCloser, error)
+	streamNameNormalizer *regexp.Regexp
+	logger               log.Logger
 
 	serverMetrics map[string]*prometheus.Desc
 	streamMetrics map[string]*prometheus.Desc
@@ -164,11 +166,12 @@ func NewStreamInfo(name, bytesIn, bytesOut, bandwidthIn, bandwidthOut, uptime st
 }
 
 // NewExporter initializes an exporter
-func NewExporter(uri string, timeout time.Duration, logger log.Logger) (*Exporter, error) {
+func NewExporter(uri string, timeout time.Duration, streamNameNormalizer *regexp.Regexp, logger log.Logger) (*Exporter, error) {
 	return &Exporter{
-		URI:    uri,
-		fetch:  fetchStats(uri, timeout),
-		logger: logger,
+		URI:                  uri,
+		fetch:                fetchStats(uri, timeout),
+		streamNameNormalizer: streamNameNormalizer,
+		logger:               logger,
 
 		serverMetrics: serverMetrics,
 		streamMetrics: streamMetrics,
@@ -212,12 +215,12 @@ func parseServerStats(doc *xmlquery.Node) (ServerInfo, error) {
 	return NewServerInfo(bytesIn, bytesOut, receiveBytes, transmitBytes, uptime), nil
 }
 
-func parseStreamsStats(doc *xmlquery.Node) ([]StreamInfo, error) {
+func parseStreamsStats(doc *xmlquery.Node, streamNameNormalizer *regexp.Regexp) ([]StreamInfo, error) {
 	streams := make([]StreamInfo, 0)
 	data := xmlquery.Find(doc, "//stream")
 
 	for _, stream := range data {
-		name := stream.SelectElement("name").InnerText()
+		name := streamNameNormalizer.FindString(stream.SelectElement("name").InnerText())
 		bytesIn := stream.SelectElement("bytes_in").InnerText()
 		bytesOut := stream.SelectElement("bytes_out").InnerText()
 		receiveBytes := stream.SelectElement("bw_in").InnerText()
@@ -252,7 +255,7 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(e.serverMetrics["bandwidthOut"], prometheus.GaugeValue, server.BandwidhOut)
 	ch <- prometheus.MustNewConstMetric(e.serverMetrics["uptime"], prometheus.CounterValue, server.Uptime)
 
-	streams, err := parseStreamsStats(doc)
+	streams, err := parseStreamsStats(doc, e.streamNameNormalizer)
 	if err != nil {
 		level.Error(e.logger).Log("msg", "Can't parse XML", "err", err)
 		return
@@ -282,11 +285,12 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 
 func main() {
 	var (
-		listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Default(":9728").String()
-		metricsPath   = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
-		scrapeURI     = kingpin.Flag("nginxrtmp.scrape-uri", "URI on which to scrape NGINX-RTMP stats.").Default("http://localhost:8080/stats").String()
-		timeout       = kingpin.Flag("nginxrtmp.timeout", "Timeout for trying to get stats from NGINX-RTMP.").Default("5s").Duration()
-		pidFile       = kingpin.Flag("nginxrtmp.pid-file", "Optional path to a file containing the NGINX-RTMP PID for additional metrics.").Default("").String()
+		listenAddress   = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Default(":9728").String()
+		metricsPath     = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
+		scrapeURI       = kingpin.Flag("nginxrtmp.scrape-uri", "URI on which to scrape NGINX-RTMP stats.").Default("http://localhost:8080/stats").String()
+		timeout         = kingpin.Flag("nginxrtmp.timeout", "Timeout for trying to get stats from NGINX-RTMP.").Default("5s").Duration()
+		pidFile         = kingpin.Flag("nginxrtmp.pid-file", "Optional path to a file containing the NGINX-RTMP PID for additional metrics.").Default("").String()
+		regexStreamName = kingpin.Flag("nginxrtmp.regex-stream-name", "Regex to normalize stream name from NGINX-RTMP").Default(".*").String()
 	)
 
 	promlogConfig := &promlog.Config{}
@@ -297,7 +301,10 @@ func main() {
 	level.Info(logger).Log("msg", "Starting nginx_rtmp_exporter", "version", version.Info())
 	level.Info(logger).Log("msg", "Build context", "context", version.BuildContext())
 
-	exporter, err := NewExporter(*scrapeURI, *timeout, logger)
+	// Compile regex before starting the exporter and exits if it a bad regex
+	streamNameNormalizer := regexp.MustCompile(*regexStreamName)
+
+	exporter, err := NewExporter(*scrapeURI, *timeout, streamNameNormalizer, logger)
 	if err != nil {
 		level.Error(logger).Log("msg", "Error creating an exporter", "err", err)
 		os.Exit(1)
