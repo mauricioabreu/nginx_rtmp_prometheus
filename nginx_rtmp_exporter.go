@@ -24,6 +24,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -32,8 +33,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"io"
 
 	"github.com/antchfx/xmlquery"
 	"github.com/go-kit/kit/log"
@@ -221,12 +220,20 @@ func parseStreamsStats(doc *xmlquery.Node, streamNameNormalizer *regexp.Regexp) 
 
 	for _, stream := range data {
 		name := streamNameNormalizer.FindString(stream.SelectElement("name").InnerText())
+		// adding the app name here to ensure that the metrics are unique
+		app := ""
+		if stream.Parent != nil && stream.Parent.Parent != nil {
+			appName := stream.Parent.Parent.SelectElement("name")
+			if appName != nil {
+				app = appName.InnerText() + "-" // dash separator between app and stream names
+			}
+		}
 		bytesIn := stream.SelectElement("bytes_in").InnerText()
 		bytesOut := stream.SelectElement("bytes_out").InnerText()
 		receiveBytes := stream.SelectElement("bw_in").InnerText()
 		transmitBytes := stream.SelectElement("bw_out").InnerText()
 		uptime := stream.SelectElement("time").InnerText()
-		streams = append(streams, NewStreamInfo(name, bytesIn, bytesOut, receiveBytes, transmitBytes, uptime))
+		streams = append(streams, NewStreamInfo(app+name, bytesIn, bytesOut, receiveBytes, transmitBytes, uptime))
 	}
 	return streams, nil
 }
