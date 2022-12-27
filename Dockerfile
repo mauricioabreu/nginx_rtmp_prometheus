@@ -1,12 +1,7 @@
-ARG ARCH="amd64"
-ARG OS="linux"
-FROM quay.io/prometheus/busybox-${OS}-${ARCH}:glibc
+FROM golang:1.19 as builder
 LABEL maintainer="Maurício Antunes <mauricio.abreua@gmail.com>"
+WORKDIR /usr/src
+COPY . .
+RUN go build -v -o /usr/src/nginx_rtmp_exporter
 
-ARG ARCH="amd64"
-ARG OS="linux"
-COPY .build/${OS}-${ARCH}/nginx_rtmp_exporter /bin/nginx_rtmp_exporter
-
-EXPOSE 9728
-USER nobody
-ENTRYPOINT [ "/bin/nginx_rtmp_exporter" ]
+CMD [ "/usr/src/nginx_rtmp_exporter" ]
