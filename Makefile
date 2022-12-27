@@ -1,9 +1,14 @@
 DOCKER_REPO ?= mauricioabreu
 DOCKER_IMAGE_NAME ?= nginx-rtmp-exporter
+DOCKER_IMAGE_TAG ?= latest
 
 .PHONY: build
 build:
-	docker build -t ${DOCKER_REPO}/${DOCKER_IMAGE_NAME}
+	docker build -t ${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
+
+.PHONY: push
+push:
+	docker buildx build --push --platform=linux/amd64,linux/arm64/v8 -t ${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
 
 .PHONY: run-nginx-rtmp
 run-nginx-rtmp:
