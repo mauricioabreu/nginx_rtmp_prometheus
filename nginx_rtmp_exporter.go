@@ -25,7 +25,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -323,7 +322,7 @@ func main() {
 	if *pidFile != "" {
 		procExporter := prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{
 			PidFn: func() (int, error) {
-				content, err := ioutil.ReadFile(*pidFile)
+				content, err := os.ReadFile(*pidFile)
 				if err != nil {
 					return 0, fmt.Errorf("cant't read pid file %q: %s", *pidFile, err)
 				}
