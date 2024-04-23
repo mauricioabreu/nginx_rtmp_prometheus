@@ -1,39 +1,11 @@
 package xpath
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 )
 
 // The XPath number operator function list.
-
-// valueType is a return value type.
-type valueType int
-
-const (
-	booleanType valueType = iota
-	numberType
-	stringType
-	nodeSetType
-)
-
-func getValueType(i interface{}) valueType {
-	v := reflect.ValueOf(i)
-	switch v.Kind() {
-	case reflect.Float64:
-		return numberType
-	case reflect.String:
-		return stringType
-	case reflect.Bool:
-		return booleanType
-	default:
-		if _, ok := i.(query); ok {
-			return nodeSetType
-		}
-	}
-	panic(fmt.Errorf("xpath unknown value type: %v", v.Kind()))
-}
 
 type logical func(iterator, string, interface{}, interface{}) bool
 
@@ -165,15 +137,28 @@ func cmpNodeSetString(t iterator, op string, m, n interface{}) bool {
 func cmpNodeSetNodeSet(t iterator, op string, m, n interface{}) bool {
 	a := m.(query)
 	b := n.(query)
-	x := a.Select(t)
-	if x == nil {
-		return false
+	for {
+		x := a.Select(t)
+		if x == nil {
+			return false
+		}
+
+		y := b.Select(t)
+		if y == nil {
+			return false
+		}
+
+		for {
+			if cmpStringStringF(op, x.Value(), y.Value()) {
+				return true
+			}
+			if y = b.Select(t); y == nil {
+				break
+			}
+		}
+		// reset
+		b.Evaluate(t)
 	}
-	y := b.Select(t)
-	if y == nil {
-		return false
-	}
-	return cmpStringStringF(op,x.Value(),y.Value())
 }
 
 func cmpStringNumeric(t iterator, op string, m, n interface{}) bool {
@@ -215,50 +200,50 @@ func cmpBooleanBoolean(t iterator, op string, m, n interface{}) bool {
 
 // eqFunc is an `=` operator.
 func eqFunc(t iterator, m, n interface{}) interface{} {
-	t1 := getValueType(m)
-	t2 := getValueType(n)
+	t1 := getXPathType(m)
+	t2 := getXPathType(n)
 	return logicalFuncs[t1][t2](t, "=", m, n)
 }
 
 // gtFunc is an `>` operator.
 func gtFunc(t iterator, m, n interface{}) interface{} {
-	t1 := getValueType(m)
-	t2 := getValueType(n)
+	t1 := getXPathType(m)
+	t2 := getXPathType(n)
 	return logicalFuncs[t1][t2](t, ">", m, n)
 }
 
 // geFunc is an `>=` operator.
 func geFunc(t iterator, m, n interface{}) interface{} {
-	t1 := getValueType(m)
-	t2 := getValueType(n)
+	t1 := getXPathType(m)
+	t2 := getXPathType(n)
 	return logicalFuncs[t1][t2](t, ">=", m, n)
 }
 
 // ltFunc is an `<` operator.
 func ltFunc(t iterator, m, n interface{}) interface{} {
-	t1 := getValueType(m)
-	t2 := getValueType(n)
+	t1 := getXPathType(m)
+	t2 := getXPathType(n)
 	return logicalFuncs[t1][t2](t, "<", m, n)
 }
 
 // leFunc is an `<=` operator.
 func leFunc(t iterator, m, n interface{}) interface{} {
-	t1 := getValueType(m)
-	t2 := getValueType(n)
+	t1 := getXPathType(m)
+	t2 := getXPathType(n)
 	return logicalFuncs[t1][t2](t, "<=", m, n)
 }
 
 // neFunc is an `!=` operator.
 func neFunc(t iterator, m, n interface{}) interface{} {
-	t1 := getValueType(m)
-	t2 := getValueType(n)
+	t1 := getXPathType(m)
+	t2 := getXPathType(n)
 	return logicalFuncs[t1][t2](t, "!=", m, n)
 }
 
 // orFunc is an `or` operator.
 var orFunc = func(t iterator, m, n interface{}) interface{} {
-	t1 := getValueType(m)
-	t2 := getValueType(n)
+	t1 := getXPathType(m)
+	t2 := getXPathType(n)
 	return logicalFuncs[t1][t2](t, "or", m, n)
 }
 
