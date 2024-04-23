@@ -17,10 +17,9 @@ import (
 	"bytes"
 	"fmt"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"text/template"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Build information. Populated at build-time.
@@ -31,29 +30,12 @@ var (
 	BuildUser string
 	BuildDate string
 	GoVersion = runtime.Version()
-)
+	GoOS      = runtime.GOOS
+	GoArch    = runtime.GOARCH
 
-// NewCollector returns a collector that exports metrics about current version
-// information.
-func NewCollector(program string) prometheus.Collector {
-	return prometheus.NewGaugeFunc(
-		prometheus.GaugeOpts{
-			Namespace: program,
-			Name:      "build_info",
-			Help: fmt.Sprintf(
-				"A metric with a constant '1' value labeled by version, revision, branch, and goversion from which %s was built.",
-				program,
-			),
-			ConstLabels: prometheus.Labels{
-				"version":   Version,
-				"revision":  Revision,
-				"branch":    Branch,
-				"goversion": GoVersion,
-			},
-		},
-		func() float64 { return 1 },
-	)
-}
+	computedRevision string
+	computedTags     string
+)
 
 // versionInfoTmpl contains the template used by Info.
 var versionInfoTmpl = `
@@ -61,6 +43,8 @@ var versionInfoTmpl = `
   build user:       {{.buildUser}}
   build date:       {{.buildDate}}
   go version:       {{.goVersion}}
+  platform:         {{.platform}}
+  tags:             {{.tags}}
 `
 
 // Print returns version information.
@@ -68,11 +52,13 @@ func Print(program string) string {
 	m := map[string]string{
 		"program":   program,
 		"version":   Version,
-		"revision":  Revision,
+		"revision":  GetRevision(),
 		"branch":    Branch,
 		"buildUser": BuildUser,
 		"buildDate": BuildDate,
 		"goVersion": GoVersion,
+		"platform":  GoOS + "/" + GoArch,
+		"tags":      GetTags(),
 	}
 	t := template.Must(template.New("version").Parse(versionInfoTmpl))
 
@@ -85,10 +71,55 @@ func Print(program string) string {
 
 // Info returns version, branch and revision information.
 func Info() string {
-	return fmt.Sprintf("(version=%s, branch=%s, revision=%s)", Version, Branch, Revision)
+	return fmt.Sprintf("(version=%s, branch=%s, revision=%s)", Version, Branch, GetRevision())
 }
 
-// BuildContext returns goVersion, buildUser and buildDate information.
+// BuildContext returns goVersion, platform, buildUser and buildDate information.
 func BuildContext() string {
-	return fmt.Sprintf("(go=%s, user=%s, date=%s)", GoVersion, BuildUser, BuildDate)
+	return fmt.Sprintf("(go=%s, platform=%s, user=%s, date=%s, tags=%s)", GoVersion, GoOS+"/"+GoArch, BuildUser, BuildDate, GetTags())
+}
+
+func GetRevision() string {
+	if Revision != "" {
+		return Revision
+	}
+	return computedRevision
+}
+
+func GetTags() string {
+	return computedTags
+}
+
+func init() {
+	computedRevision, computedTags = computeRevision()
+}
+
+func computeRevision() (string, string) {
+	var (
+		rev      = "unknown"
+		tags     = "unknown"
+		modified bool
+	)
+
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return rev, tags
+	}
+	for _, v := range buildInfo.Settings {
+		if v.Key == "vcs.revision" {
+			rev = v.Value
+		}
+		if v.Key == "vcs.modified" {
+			if v.Value == "true" {
+				modified = true
+			}
+		}
+		if v.Key == "-tags" {
+			tags = v.Value
+		}
+	}
+	if modified {
+		return rev + "-modified", tags
+	}
+	return rev, tags
 }
